@@ -779,12 +779,12 @@
 
       if (refreshHints && refreshHints.ignoreDiffsBefore) {
         from = Math.max(0,
-            Math.min(newRows.length, refreshHints.ignoreDiffsBefore));
+          Math.min(newRows.length, refreshHints.ignoreDiffsBefore));
       }
 
-      if (refreshHints && refreshHints.ignoreDiffsAfter) {
+      if (refreshHints && (refreshHints.ignoreDiffsAfter >= 0)) {
         to = Math.min(newRows.length,
-            Math.max(0, refreshHints.ignoreDiffsAfter));
+          Math.max(0, refreshHints.ignoreDiffsAfter + 1));
       }
 
       for (var i = from, rl = rows.length; i < to; i++) {
