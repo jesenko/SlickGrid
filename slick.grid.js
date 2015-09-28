@@ -332,6 +332,8 @@ if (typeof Slick === "undefined") {
             .bind("keydown", handleKeyDown)
             .bind("click", handleClick)
             .bind("dblclick", handleDblClick)
+            .bind("mousedown", handleMouseDown)
+            .bind("mouseup", handleMouseUp)
             .bind("contextmenu", handleContextMenu)
             .bind("draginit", handleDragInit)
             .bind("dragstart", {distance: 3}, handleDragStart)
@@ -2462,8 +2464,30 @@ if (typeof Slick === "undefined") {
       if ((activeCell != cell.cell || activeRow != cell.row) && canCellBeActive(cell.row, cell.cell)) {
         if (!getEditorLock().isActive() || getEditorLock().commitCurrentEdit()) {
           scrollRowIntoView(cell.row, false);
-          setActiveCellInternal(getCellNode(cell.row, cell.cell));
+          setActiveCellInternal(getCellNode(cell.row, cell.cell), (cell.row === getDataLength()), e);
         }
+      }
+    }
+
+    function handleMouseDown(e) {
+      var cell = getCellFromEvent(e);
+      if (!cell) return;
+
+      if ((activeCell != cell.cell || activeRow != cell.row) && canCellBeActive(cell.row, cell.cell)) {
+        if (!getEditorLock().isActive() || getEditorLock().commitCurrentEdit()) {
+          scrollRowIntoView(cell.row,false);
+          setActiveCellInternal(getCellNode(cell.row,cell.cell), (cell.row === getDataLength()) || options.autoEdit, e);
+        }
+      }
+    }
+
+    function handleMouseUp(e) {
+      var cell = getCellFromEvent(e);
+      if (!cell) return;
+
+      trigger(self.onMouseUp, {row: cell.row, cell: cell.cell}, e);
+      if (e.isImmediatePropagationStopped()) {
+        return;
       }
     }
 
@@ -2647,7 +2671,13 @@ if (typeof Slick === "undefined") {
       }
     }
 
-    function setActiveCellInternal(newCell, opt_editMode) {
+    function scrollActiveCellIntoView() {
+      if (activeRow != null && activeCell != null) {
+        scrollCellIntoView(activeRow, activeCell);
+      }
+    }
+
+    function setActiveCellInternal(newCell, opt_editMode, e) {
       if (activeCellNode !== null) {
         makeActiveCellNormal();
         $(activeCellNode).removeClass("active");
@@ -2686,7 +2716,7 @@ if (typeof Slick === "undefined") {
       }
 
       if (activeCellChanged) {
-        trigger(self.onActiveCellChanged, getActiveCell());
+        trigger(self.onActiveCellChanged, getActiveCell(), e);
       }
     }
 
@@ -3496,6 +3526,7 @@ if (typeof Slick === "undefined") {
       "onMouseLeave": new Slick.Event(),
       "onClick": new Slick.Event(),
       "onDblClick": new Slick.Event(),
+      "onMouseUp": new Slick.Event(),
       "onContextMenu": new Slick.Event(),
       "onKeyDown": new Slick.Event(),
       "onAddNewRow": new Slick.Event(),

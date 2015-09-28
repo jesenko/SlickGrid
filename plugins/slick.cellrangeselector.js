@@ -6,20 +6,20 @@
     }
   });
 
-
   function CellRangeSelector(options) {
     var _grid;
     var _canvas;
     var _dragging;
     var _decorator;
     var _self = this;
+    var _lastActiveCell;
+    var _dragSelectionAfterActiveChanged = false;
     var _handler = new Slick.EventHandler();
     var _defaults = {
       selectionCss: {
         "border": "2px dashed blue"
       }
     };
-
 
     function init(grid) {
       options = $.extend(true, {}, _defaults, options);
@@ -30,7 +30,16 @@
         .subscribe(_grid.onDragInit, handleDragInit)
         .subscribe(_grid.onDragStart, handleDragStart)
         .subscribe(_grid.onDrag, handleDrag)
-        .subscribe(_grid.onDragEnd, handleDragEnd);
+        .subscribe(_grid.onDragEnd, handleDragEnd)
+        .subscribe(_grid.onMouseUp, handleMouseUp);
+
+      initForShiftSelection(_handler, _grid);
+    }
+
+    function initForShiftSelection(handler, grid)
+    {
+      _handler
+        .subscribe(_grid.onActiveCellChanged, handleActiveCellChange);
     }
 
     function destroy() {
@@ -87,9 +96,8 @@
       if (!_dragging) {
         return;
       }
-
+      _dragSelectionAfterActiveChanged = true;
       _dragging = false;
-      e.stopImmediatePropagation();
 
       _decorator.hide();
       _self.onCellRangeSelected.notify({
@@ -99,13 +107,51 @@
             dd.range.end.row,
             dd.range.end.cell
         )
-      });
+      },
+      e);
+      e.stopImmediatePropagation();
+    }
+
+    function handleActiveCellChange(e, args) {
+      if (e.shiftKey && _lastActiveCell)
+        _self.onCellRangeSelected.notify({
+            range:  new Slick.Range(
+              _lastActiveCell.row,
+              _lastActiveCell.cell,
+              args.row,
+              args.cell
+            )}, e);
+
+      if (e.button!=0) {
+        _self.onCellRangeSelected.notify({
+        range:  new Slick.Range(
+          args.row,
+          args.cell,
+          args.row,
+          args.cell
+        )}, e);
+      }
+
+      _dragSelectionAfterActiveChanged = false;
+      _lastActiveCell=args;
+    }
+
+    function handleMouseUp(e, args) {
+      // if no region was selected with mouse dragging and not doing shift-selection and cell is selectable, add clicked cell to selection
+      if (!_dragSelectionAfterActiveChanged && !e.shiftKey && _grid.canCellBeSelected(args.row,args.cell)) {
+        _self.onCellRangeSelected.notify({
+        range:  new Slick.Range(
+          args.row,
+          args.cell,
+          args.row,
+          args.cell
+        )}, e);
+      }
     }
 
     $.extend(this, {
       "init": init,
       "destroy": destroy,
-
       "onBeforeCellRangeSelected": new Slick.Event(),
       "onCellRangeSelected": new Slick.Event()
     });
