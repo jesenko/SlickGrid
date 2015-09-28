@@ -269,7 +269,6 @@
       $input.datepicker({
         showOn: "button",
         buttonImageOnly: true,
-        buttonImage: "../images/calendar.gif",
         beforeShow: function () {
           calendarOpen = true
         },
@@ -385,6 +384,13 @@
     };
 
     this.validate = function () {
+      if (args.column.validator) {
+        var validationResults = args.column.validator($input.val());
+        if (!validationResults.valid) {
+          return validationResults;
+        }
+      }
+
       return {
         valid: true,
         msg: null
