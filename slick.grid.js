@@ -600,7 +600,7 @@ if (typeof Slick === "undefined") {
 
         var header = $("<div class='ui-state-default slick-header-column' style='left: 1000px;' />")
             .html("<span class='slick-column-name'>" + m.name + "</span>")
-            .width(m.width - headerColumnWidthDiff)
+            .outerWidth(m.width - headerColumnWidthDiff)
             .attr("id", "" + uid + m.id)
             .attr("title", m.toolTip || "")
             .data("column", m)
