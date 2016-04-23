@@ -66,8 +66,8 @@
       _grid.focus();
 
       var start = _grid.getCellFromPoint(
-          dd.startX - $(_canvas).offset().left,
-          dd.startY - $(_canvas).offset().top);
+          dd.startX - getOffset(_canvas).left,
+          dd.startY - getOffset(_canvas).top);
 
       dd.range = {start: start, end: {}};
 
@@ -81,8 +81,8 @@
       e.stopImmediatePropagation();
 
       var end = _grid.getCellFromPoint(
-          e.pageX - $(_canvas).offset().left,
-          e.pageY - $(_canvas).offset().top);
+          e.pageX - getOffset(_canvas).left,
+          e.pageY - getOffset(_canvas).top);
 
       if (!_grid.canCellBeSelected(end.row, end.cell)) {
         return;
@@ -147,6 +147,12 @@
           args.cell
         )}, e);
       }
+    }
+
+    function getOffset(element) {
+      var docRect = document.documentElement.getBoundingClientRect(),
+          elemRect = element.getBoundingClientRect();
+      return {top: elemRect.top - docRect.top, left: elemRect.left - docRect.left};
     }
 
     $.extend(this, {
