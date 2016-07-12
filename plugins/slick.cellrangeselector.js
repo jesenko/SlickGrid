@@ -122,9 +122,9 @@
               args.cell
             )}, e);
 
-      if (e.button!=0) {
+      if (e.button == null) {
         _self.onCellRangeSelected.notify({
-        range:  new Slick.Range(
+        range: new Slick.Range(
           args.row,
           args.cell,
           args.row,
