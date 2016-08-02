@@ -36,10 +36,9 @@
       initForShiftSelection(_handler, _grid);
     }
 
-    function initForShiftSelection(handler, grid)
-    {
+    function initForShiftSelection(handler, grid) {
       _handler
-        .subscribe(_grid.onActiveCellChanged, handleActiveCellChange);
+        .subscribe(grid.onActiveCellChanged, handleActiveCellChange);
     }
 
     function destroy() {
@@ -122,7 +121,7 @@
               args.cell
             )}, e);
 
-      if (e.button == null) {
+      if (isUsingKeyboard(e) || isRightClickingOutsideCurrentRange(e, args)) {
         _self.onCellRangeSelected.notify({
         range: new Slick.Range(
           args.row,
@@ -133,12 +132,36 @@
       }
 
       _dragSelectionAfterActiveChanged = false;
-      _lastActiveCell=args;
+      _lastActiveCell = args;
+    }
+
+    function isUsingKeyboard(e) {
+      return e.button == null;
+    }
+
+    function isRightClickingOutsideCurrentRange(e, args) {
+      return e.button === 2 && !isCellInExistingRanges(args);
+    }
+
+    function isCellInExistingRanges(args) {
+      var ranges = _grid.getSelectionModel().getSelectedRanges();
+      for (var i = 0; i < ranges.length; i++) {
+        if (ranges[i].contains(args.row, args.cell))
+          return true;
+      }
+      return false;
     }
 
     function handleMouseUp(e, args) {
-      // if no region was selected with mouse dragging and not doing shift-selection and cell is selectable, add clicked cell to selection
-      if (!_dragSelectionAfterActiveChanged && !e.shiftKey && _grid.canCellBeSelected(args.row,args.cell)) {
+      // if no region was selected with mouse dragging and not doing
+      // shift-selection and cell is selectable, set clicked cell as current
+      // selection. Also, do not change selection on right click - it is
+      // explicitly handled by handleActiveCellChange, to avoid different
+      // behavior on windows / mac / linux (mouseUp event is not triggered on
+      // macOS / linux if context menu is shown, it is triggered on windows)
+      if (!_dragSelectionAfterActiveChanged &&
+          !e.shiftKey && _grid.canCellBeSelected(args.row, args.cell) &&
+          e.button !== 2) {
         _self.onCellRangeSelected.notify({
         range:  new Slick.Range(
           args.row,
