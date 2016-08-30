@@ -43,7 +43,7 @@
         _grid.getEditorLock().cancelCurrentEdit();
       }
 
-      if (_grid.getEditorLock().isActive() || !/move|selectAndMove/.test(_grid.getColumns()[cell.cell].behavior)) {
+      if (_grid.getEditorLock().isActive() || !/move|selectAndMove/.test(getBehavior(cell.row, cell.cell))) {
         return false;
       }
 
@@ -76,6 +76,21 @@
           .appendTo(_canvas);
 
       dd.insertBefore = -1;
+    }
+
+    function getBehavior(row, cell) {
+      var column = _grid.getColumns()[cell];
+      var data = _grid.getData();
+      var rowMetadata = data.getItemMetadata && data.getItemMetadata(row);
+
+      // look up by id, then index
+      var columnOverrides = rowMetadata &&
+            rowMetadata.columns &&
+            (rowMetadata.columns[column.id] || rowMetadata.columns[_grid.getColumnIndex(column.id)]);
+
+      return (columnOverrides && columnOverrides.behavior) ||
+        (rowMetadata && rowMetadata.formatter) ||
+        column.behavior;
     }
 
     function handleDrag(e, dd) {
