@@ -1440,7 +1440,7 @@ if (typeof Slick === "undefined") {
       }
 
       var rowHeight = (options.rowHeight - cellHeightDiff);
-      stringArray.push("<div class='" + cellCss + "' style='height:" + rowHeight + "px; left:" + columnPosLeft[cell] + "px;right:" + (canvasWidth - columnPosRight[cell]) + "px'>");
+      stringArray.push("<div class='" + cellCss + "' style='height:" + rowHeight + "px; left:" + columnPosLeft[cell] + "px;right:" + (canvasWidth - columnPosRight[cell + colspan - 1]) + "px'>");
 
       // if there is a corresponding row (if not, this is the Add New row or this data hasn't been loaded yet)
       if (item) {
