@@ -182,13 +182,6 @@ if (typeof Slick === "undefined") {
     var counter_rows_rendered = 0;
     var counter_rows_removed = 0;
 
-    // These two variables work around a bug with inertial scrolling in Webkit/Blink on Mac.
-    // See http://crbug.com/312427.
-    var rowNodeFromLastMouseWheelEvent;  // this node must not be deleted while inertial scrolling
-    var zombieRowNodeFromLastMouseWheelEvent;  // node that was hidden instead of getting deleted
-    var zombieRowCacheFromLastMouseWheelEvent;  // row cache for above node
-    var zombieRowPostProcessedFromLastMouseWheelEvent;  // post processing references for above node
-
     // store css attributes if display:none is active in container or parent
     var cssShow = { position: 'absolute', visibility: 'hidden', display: 'block' };
     var $hiddenParents;
@@ -341,11 +334,6 @@ if (typeof Slick === "undefined") {
             .delegate(".slick-cell", "mouseenter", handleMouseEnter)
             .delegate(".slick-cell", "mouseleave", handleMouseLeave);
 
-        // Work around http://crbug.com/312427.
-        if (navigator.userAgent.toLowerCase().match(/webkit/) &&
-            navigator.userAgent.toLowerCase().match(/macintosh/)) {
-          $canvas.bind("mousewheel", handleMouseWheel);
-        }
         restoreCssFromHiddenInit();
       }
     }
@@ -1520,18 +1508,10 @@ if (typeof Slick === "undefined") {
         return;
       }
 
-      if (rowNodeFromLastMouseWheelEvent === cacheEntry.rowNode) {
-        cacheEntry.rowNode.style.display = 'none';
-        zombieRowNodeFromLastMouseWheelEvent = rowNodeFromLastMouseWheelEvent;
-        zombieRowCacheFromLastMouseWheelEvent = cacheEntry;
-        zombieRowPostProcessedFromLastMouseWheelEvent = postProcessedRows[row];
-        // ignore post processing cleanup in this case - it will be dealt with later
+      if (options.enableAsyncPostRenderCleanup && postProcessedRows[row]) {
+        queuePostProcessedRowForCleanup(cacheEntry, postProcessedRows[row], row);
       } else {
-        if (options.enableAsyncPostRenderCleanup && postProcessedRows[row]) {
-          queuePostProcessedRowForCleanup(cacheEntry, postProcessedRows[row], row);
-        } else {
-          $canvas[0].removeChild(cacheEntry.rowNode);
-        }
+        $canvas[0].removeChild(cacheEntry.rowNode);
       }
 
       delete rowsCache[row];
@@ -2220,26 +2200,6 @@ if (typeof Slick === "undefined") {
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Interactivity
-
-    function handleMouseWheel(e) {
-      var rowNode = $(e.target).closest(".slick-row")[0];
-      if (rowNode != rowNodeFromLastMouseWheelEvent) {
-        if (zombieRowNodeFromLastMouseWheelEvent && zombieRowNodeFromLastMouseWheelEvent != rowNode) {
-          if (options.enableAsyncPostRenderCleanup && zombieRowPostProcessedFromLastMouseWheelEvent) {
-            queuePostProcessedRowForCleanup(zombieRowCacheFromLastMouseWheelEvent,
-              zombieRowPostProcessedFromLastMouseWheelEvent);
-          } else {
-            $canvas[0].removeChild(zombieRowNodeFromLastMouseWheelEvent);
-          }
-          zombieRowNodeFromLastMouseWheelEvent = null;
-          zombieRowCacheFromLastMouseWheelEvent = null;
-          zombieRowPostProcessedFromLastMouseWheelEvent = null;
-
-          if (options.enableAsyncPostRenderCleanup) { startPostProcessingCleanup(); }
-        }
-        rowNodeFromLastMouseWheelEvent = rowNode;      
-      }
-    }
 
     function handleDragInit(e, dd) {
       var cell = getCellFromEvent(e);
