@@ -2251,10 +2251,10 @@ if (typeof Slick === "undefined") {
               return; // no editing mode to cancel, allow bubbling and default processing (exit without cancelling the event)
             }
             cancelEditAndSetFocus();
-          } else if (e.which == keyCode.PAGEDOWN) {
+          } else if (e.which == keyCode.PAGE_DOWN) {
             navigatePageDown();
-            handled = true;           
-          } else if (e.which == keyCode.PAGEUP) {
+            handled = true;
+          } else if (e.which == keyCode.PAGE_UP) {
             navigatePageUp();
             handled = true;
           } else if (e.which == keyCode.LEFT) {
