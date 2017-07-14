@@ -41,6 +41,8 @@
       var from = grid.getCellNodeBox(range.fromRow, range.fromCell);
       var to = grid.getCellNodeBox(range.toRow, range.toCell);
 
+      if (from == null || to == null) return _elem;
+
       _elem.css({
         top: from.top - 1,
         left: from.left - 1,
