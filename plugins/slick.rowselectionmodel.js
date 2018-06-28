@@ -99,7 +99,7 @@
 
     function handleKeyDown(e) {
       var activeRow = _grid.getActiveCell();
-      if (activeRow && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && (e.which == 38 || e.which == 40)) {
+      if (activeRow && _grid.getOptions().multiSelect && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && (e.which == 38 || e.which == 40)) {
         var selectedRows = getSelectedRows();
         selectedRows.sort(function (x, y) {
           return x - y
