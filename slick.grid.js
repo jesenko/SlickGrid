@@ -1123,13 +1123,17 @@ if (typeof Slick === "undefined") {
       return sortColumns;
     }
 
+    function numericComparer(a, b) {
+      return a - b;
+    }
+
     function handleSelectedRangesChanged(e, ranges) {
-      selectedRows = [];
+      var unsortedSelectedRows = [];
       var hash = {};
       for (var i = 0; i < ranges.length; i++) {
         for (var j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
           if (!hash[j]) {  // prevent duplicates
-            selectedRows.push(j);
+            unsortedSelectedRows.push(j);
             hash[j] = {};
           }
           for (var k = ranges[i].fromCell; k <= ranges[i].toCell; k++) {
@@ -1139,6 +1143,7 @@ if (typeof Slick === "undefined") {
           }
         }
       }
+      selectedRows = unsortedSelectedRows.sort(numericComparer);
 
       setCellCssStyles(options.selectedCellCssClass, hash);
 
